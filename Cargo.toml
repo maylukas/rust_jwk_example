@@ -1,0 +1,21 @@
+[package]
+name = "jwk_example"
+version = "0.1.0"
+authors = ["lma <lukas.may@dscsag.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+juniper = "0.14.2"
+jsonwebtoken = "7.1.1"
+reqwest = { version = "0.10.6", features = ["json"] }
+serde = "1.0.111"
+tokio = { version = "0.2.21", features = ["macros", "rt-threaded"] }
+lazy_static = "1.4.0"
+log = "0.4.8"
+chrono = "0.4.11"
+async-trait = "0.1.35"
+futures = "0.3.5"
+juniper-from-schema = "0.5.2"
+rocket = "0.4.5"

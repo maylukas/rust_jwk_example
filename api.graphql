@@ -1,0 +1,67 @@
+type running_entry {
+  createdAt: timestamptz!
+  description: String!
+  end: timestamptz
+  durationSeconds: bigint
+  id: uuid!
+  start: timestamptz!
+  updatedAt: timestamptz!
+}
+
+type running_entry_response {
+  runningEntry: running_entry
+}
+
+type stop_running_entry_response {
+  successful: Boolean!
+  entry: running_entry
+}
+
+type start_tracker_response {
+  entry: running_entry
+}
+
+enum report_interval {
+  THIS_WEEK
+  LAST_WEEK
+  THIS_MONTH
+  LAST_MONTH
+  THIS_YEAR
+}
+
+type aggregated_tracked_time_chart_data_point {
+  intervalStart: timestamptz!
+  seconds: Int!
+}
+
+type Query {
+  runningEntry: running_entry_response
+  aggregatedTrackedT(
+    report_interval: report_interval!
+  ): [aggregated_tracked_time_chart_data_point]!
+}
+
+input running_entry_updates {
+  description: String
+  start: timestamptz
+}
+
+type change_running_entry_response {
+  entry: running_entry
+}
+
+type Mutation {
+  startTracker(start: timestamptz, description: String): start_tracker_response
+  stopRunningEntry: stop_running_entry_response
+  changeRunningEntry(
+    updates: running_entry_updates!
+  ): change_running_entry_response
+}
+
+type MutationResult {
+  successful: Boolean!
+}
+
+scalar uuid
+scalar timestamptz
+scalar bigint
