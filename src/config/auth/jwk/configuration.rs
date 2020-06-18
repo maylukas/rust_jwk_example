@@ -1,5 +1,6 @@
 use std::env;
 
+#[derive(Debug)]
 pub struct JwkConfiguration {
     pub jwk_url: String,
     pub audience: String,

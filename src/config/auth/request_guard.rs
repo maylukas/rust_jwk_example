@@ -1,4 +1,4 @@
-use crate::config::auth::jwk::JwkVerifier;
+use crate::config::auth::jwk::JwkAuth;
 use crate::domain::user::User;
 use rocket::http::Status;
 use rocket::request;
@@ -24,8 +24,8 @@ fn get_token_from_header(header: &str) -> Option<String> {
     }
 }
 
-fn verify_token(token: &String, verifier: &JwkVerifier) -> request::Outcome<User, AuthError> {
-    let verified_token = verifier.verify(&token);
+fn verify_token(token: &String, auth: &JwkAuth) -> request::Outcome<User, AuthError> {
+    let verified_token = auth.verify(&token);
     let maybe_user = verified_token.map(|token| User {
         uid: token.claims.sub,
     });
@@ -35,14 +35,11 @@ fn verify_token(token: &String, verifier: &JwkVerifier) -> request::Outcome<User
     }
 }
 
-fn parse_and_verify_auth_header(
-    header: &str,
-    verifier: &JwkVerifier,
-) -> request::Outcome<User, AuthError> {
+fn parse_and_verify_auth_header(header: &str, auth: &JwkAuth) -> request::Outcome<User, AuthError> {
     let maybe_token = get_token_from_header(header);
 
     match maybe_token {
-        Some(token) => verify_token(&token, verifier),
+        Some(token) => verify_token(&token, auth),
         None => Outcome::Failure((Status::Unauthorized, AuthError::InvalidJwt)),
     }
 }
@@ -52,12 +49,12 @@ impl<'a, 'r> FromRequest<'a, 'r> for User {
 
     fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
         let auth_headers: Vec<_> = request.headers().get("Authorization").collect();
-        let configured_verifier = request.guard::<State<JwkVerifier>>();
+        let configured_auth = request.guard::<State<JwkAuth>>();
 
-        match configured_verifier {
-            Outcome::Success(verifier) => match auth_headers.len() {
+        match configured_auth {
+            Outcome::Success(auth) => match auth_headers.len() {
                 0 => Outcome::Failure((Status::Unauthorized, AuthError::NoAuthorizationHeader)),
-                1 => parse_and_verify_auth_header(auth_headers[0], &verifier),
+                1 => parse_and_verify_auth_header(auth_headers[0], &auth),
                 _ => Outcome::Failure((Status::BadRequest, AuthError::MultipleKeysProvided)),
             },
             _ => Outcome::Failure((Status::InternalServerError, AuthError::NoJwkVerifier)),

@@ -4,6 +4,7 @@ use jsonwebtoken::decode_header;
 use jsonwebtoken::TokenData;
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::str::FromStr;
 
 #[derive(Debug, Deserialize)]
@@ -27,15 +28,24 @@ enum VerificationError {
     UnkownKeyAlgorithm,
 }
 
+#[derive(Debug)]
 pub struct JwkVerifier {
-    keys: Vec<JwkKey>,
+    keys: HashMap<String, JwkKey>,
     config: JwkConfiguration,
+}
+
+fn keys_to_map(keys: Vec<JwkKey>) -> HashMap<String, JwkKey> {
+    let mut keys_as_map = HashMap::new();
+    for key in keys {
+        keys_as_map.insert(String::clone(&key.kid), key);
+    }
+    keys_as_map
 }
 
 impl JwkVerifier {
     pub fn new(keys: Vec<JwkKey>) -> JwkVerifier {
         JwkVerifier {
-            keys: keys,
+            keys: keys_to_map(keys),
             config: jwk::get_configuration(),
         }
     }
@@ -61,8 +71,12 @@ impl JwkVerifier {
         }
     }
 
+    pub fn set_keys(&mut self, keys: Vec<JwkKey>) {
+        self.keys = keys_to_map(keys);
+    }
+
     fn get_key(&self, key_id: String) -> Option<&JwkKey> {
-        self.keys.iter().find(|key| key.kid == key_id)
+        self.keys.get(&key_id)
     }
 
     fn decode_token_with_key(

@@ -7,15 +7,11 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug executable 'time-tracking-service'",
+      "name": "Debug executable 'jwk_example'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=time-tracking-service",
-          "--package=time-tracking-service"
-        ],
+        "args": ["build", "--bin=jwk_example", "--package=jwk_example"],
         "filter": {
-          "name": "time-tracking-service",
+          "name": "jwk_example",
           "kind": "bin"
         }
       },
@@ -25,16 +21,16 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug unit tests in executable 'time-tracking-service'",
+      "name": "Debug unit tests in executable 'jwk_example'",
       "cargo": {
         "args": [
           "test",
           "--no-run",
-          "--bin=time-tracking-service",
-          "--package=time-tracking-service"
+          "--bin=jwk_example",
+          "--package=jwk_example"
         ],
         "filter": {
-          "name": "time-tracking-service",
+          "name": "jwk_example",
           "kind": "bin"
         }
       },
