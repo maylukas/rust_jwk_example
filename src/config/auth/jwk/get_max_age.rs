@@ -9,6 +9,17 @@ pub enum MaxAgeParseError {
     NonNumericMaxAge,
 }
 
+// Determines the max age of an HTTP response
+pub fn get_max_age(response: &Response) -> Result<Duration, MaxAgeParseError> {
+    let headers = response.headers();
+    let header = headers.get("Cache-Control");
+
+    match header {
+        Some(header_value) => parse_cache_control_header(header_value),
+        None => Err(MaxAgeParseError::NoCacheControlHeader),
+    }
+}
+
 fn parse_max_age_value(cache_control_value: &str) -> Result<Duration, MaxAgeParseError> {
     let tokens: Vec<&str> = cache_control_value.split(",").collect();
     for token in tokens {
@@ -36,16 +47,5 @@ fn parse_cache_control_header(header_value: &HeaderValue) -> Result<Duration, Ma
     match header_value.to_str() {
         Ok(string_value) => parse_max_age_value(string_value),
         Err(_) => Err(MaxAgeParseError::NoCacheControlHeader),
-    }
-}
-
-// Determines the max age of an HTTP response
-pub fn get_max_age(response: &Response) -> Result<Duration, MaxAgeParseError> {
-    let headers = response.headers();
-    let header = headers.get("Cache-Control");
-
-    match header {
-        Some(header_value) => parse_cache_control_header(header_value),
-        None => Err(MaxAgeParseError::NoCacheControlHeader),
     }
 }

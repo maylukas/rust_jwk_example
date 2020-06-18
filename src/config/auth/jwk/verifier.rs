@@ -22,8 +22,6 @@ pub struct Claims {
 }
 
 enum VerificationError {
-    InvalidAudience,
-    InvalidIssuer,
     InvalidSignature,
     UnkownKeyAlgorithm,
 }
@@ -61,11 +59,7 @@ impl JwkVerifier {
             _ => return None,
         };
 
-        let verification_result = self
-            .decode_token_with_key(jwk_key, token)
-            .and_then(|token| self.verify_token_data(token));
-
-        match verification_result {
+        match self.decode_token_with_key(jwk_key, token) {
             Ok(token_data) => Some(token_data),
             _ => None,
         }
@@ -89,21 +83,11 @@ impl JwkVerifier {
             Err(_error) => return Err(VerificationError::UnkownKeyAlgorithm),
         };
 
+        let mut validation = Validation::new(algorithm);
+        validation.set_audience(&[&self.config.audience]);
+        validation.iss = Some(self.config.issuer.clone());
         let key = DecodingKey::from_rsa_components(&key.n, &key.e);
-        return decode::<Claims>(token, &key, &Validation::new(algorithm))
+        return decode::<Claims>(token, &key, &validation)
             .map_err(|_| VerificationError::InvalidSignature);
-    }
-
-    fn verify_token_data(
-        &self,
-        token: TokenData<Claims>,
-    ) -> Result<TokenData<Claims>, VerificationError> {
-        if token.claims.aud != self.config.audience {
-            Result::Err(VerificationError::InvalidAudience)
-        } else if token.claims.iss != self.config.issuer {
-            Result::Err(VerificationError::InvalidIssuer)
-        } else {
-            Result::Ok(token)
-        }
     }
 }
