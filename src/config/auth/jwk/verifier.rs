@@ -23,7 +23,7 @@ pub struct Claims {
 
 enum VerificationError {
     InvalidSignature,
-    UnkownKeyAlgorithm,
+    UnknownKeyAlgorithm,
 }
 
 #[derive(Debug)]
@@ -80,7 +80,7 @@ impl JwkVerifier {
     ) -> Result<TokenData<Claims>, VerificationError> {
         let algorithm = match Algorithm::from_str(&key.alg) {
             Ok(alg) => alg,
-            Err(_error) => return Err(VerificationError::UnkownKeyAlgorithm),
+            Err(_error) => return Err(VerificationError::UnknownKeyAlgorithm),
         };
 
         let mut validation = Validation::new(algorithm);
